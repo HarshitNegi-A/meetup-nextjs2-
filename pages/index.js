@@ -1,22 +1,5 @@
-
+import { MongoClient } from "mongodb"
 import MeetupList from "../components/meetups/MeetupList"
-
-const DUMMY_MEETUPS=[
-    {
-        id:'m1',
-        title:'A first meetup',
-        image:'https://images.nationalgeographic.org/image/upload/t_edhub_resource_key_image/v1652341395/EducationHub/photos/sonoran-desert.jpg',
-        address:'Some address',
-        description:"First meetup"
-    },
-    {
-        id:'m2',
-        title:'A second meetup',
-        image:'https://images.nationalgeographic.org/image/upload/t_edhub_resource_key_image/v1652341395/EducationHub/photos/sonoran-desert.jpg',
-        address:'Some second address',
-        description:"Second meetup"
-    }
-]
 
 function HomePage(props){
 
@@ -37,9 +20,23 @@ function HomePage(props){
 // }
 
 export async function getStaticProps() {
+    const client = await MongoClient.connect('mongodb+srv://harshit:Harshit123@cluster0.k6gpe.mongodb.net/meetups?retryWrites=true&w=majority&appName=Cluster0')
+
+        const db = client.db()
+
+        const meetupsCollection = db.collection('meetups')
+        const meetups = await meetupsCollection.find().toArray();
+
+        client.close();
+
     return {
         props:{
-            meetups:DUMMY_MEETUPS
+            meetups:meetups.map(meetup=>({
+                title:meetup.title,
+                address:meetup.address,
+                image:meetup.image,
+                id:meetup._id.toString()
+            }))
         },
         revalidate:10
     }
